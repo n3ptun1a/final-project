@@ -116,36 +116,36 @@ function mousePressed() {
   var dx = mouseX - ball.x; //checks for mouse input
   var dy = mouseY - ball.y;
   if (sqrt(dx*dx + dy*dy) < ball.r) {
-    isAiming = true;
+  	isAiming = true;
   }
 }
 
 function mouseReleased() { // shoot the ball!
-  if (isAiming) {
-    var vx = (ball.x - mouseX) * 0.1;
-    var vy = (ball.y - mouseY) * 0.1;
-    ball.velX += vx;
-    ball.velY += vy;
-    shots++;
-    isAiming = false;
-  }
+	if (isAiming) {
+		var vx = (ball.x - mouseX) * 0.1;
+		var vy = (ball.y - mouseY) * 0.1;
+		ball.velX += vx;
+		ball.velY += vy;
+		shots++;
+		isAiming = false;
+	}
 }
 
 // ----- ball class -----
 class Ball {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.velX = 0;
-    this.velY = 0;
-    this.r    = 12;
-  }
-  update() {
+	constructor(x, y) {
+		this.x = x;
+		this.y = y;
+		this.velX = 0;
+		this.velY = 0;
+		this.r    = 12;
+	}
+	update() {
     // wind
-    this.velX += windX;
-    this.velY += windY;
+		this.velX += windX;
+		this.velY += windY;
     // wells
-    for (var i = 0; i < wells.length; i++) {
+		for (var i = 0; i < wells.length; i++) {
       var w = wells[i]; // applies whatever comes next for each well
       var dx = w.x - this.x; // distance from ball to well
       var dy = w.y - this.y;
@@ -154,9 +154,48 @@ class Ball {
       var force = w.strength / distSq;
       var d = sqrt(dx*dx + dy*dy);
       if (d > 0) {
-        dx /= d; dy /= d;
+      	dx /= d; dy /= d;
       }
       this.velX += dx * force;
       this.velY += dy * force;
-    }
+  }
     // movement and such blah blah
+  this.x += this.velX;
+  this.y += this.velY;
+  this.velX *= 0.995;
+  this.velY *= 0.995;
+    // bounds
+  if (this.x < 0) this.x = 0;
+  if (this.x > width) this.x = width;
+  if (this.y < 0) this.y = 0;
+  if (this.y > height) this.y = height;
+}
+show() {
+	stroke(0);
+	fill(200, 200, 0);
+	ellipse(this.x, this.y, this.r*2, this.r*2);
+}
+}
+
+// ----- Well class -----
+class Well {
+	constructor(x, y, strength) {
+		this.x = x;
+		this.y = y;
+		this.strength = strength;
+	}
+	show() {
+		noFill();
+		stroke(0, 0, 200, 100);
+		ellipse(this.x, this.y, this.strength*0.5, this.strength*0.5);
+	}
+}
+
+// ----- localStorage helpers -----
+function loadBest() {
+	var js = localStorage.getItem("gg_best");
+	if (js) bestShots = JSON.parse(js);
+}
+function saveBest() {
+	localStorage.setItem("gg_best", JSON.stringify(bestShots));
+}
