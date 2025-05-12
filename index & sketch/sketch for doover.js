@@ -1,11 +1,33 @@
 // lets go golfing - dj khaled
 // uses p5.Vector, localStorage (according to research)
 
+// levels who wouldve thunk it
+let levels = [
+	{
+		startX: 100, startY: 500,
+		holeX: 700,   holeY: 100,
+		windX: 0.02,  windY: 0,
+		wells: [
+			{ x: 200, y: 300, strength: 100 },
+			{ x: 400, y: 200, strength: 200 }
+		]
+	},
+	{
+		startX: 50,  startY: 550,
+		holeX: 750,  holeY: 50,
+		windX: -0.01, windY: 0,
+		wells: [
+			{ x: 300, y: 400, strength: 300 },
+			{ x: 500, y: 150, strength: 150 }
+		]
+	}
+];
+
 // globals
-let levels = [];
 let currentLevel = 0;
 let ball;
-let holePos;
+let holeX, holeY; // misused holePos, didnt even reintroduce throughout the rest of the program lol
+let windX, windY;  // (i think I had forgot to change holePos in my openprocessing window as well so it worked there but I just noticed it was mismatched)
 let wind;            // p5.Vector
 let wells = [];      // array of Well
 let shots, bestShots = {}; // see loadBest
@@ -45,70 +67,65 @@ function initLevel(idx) {
 }
 
 function draw() {
-  // flat‑color backgrounds (might change)
-	if (currentLevel === 0) {
-    background(150, 200, 255);  // blue
-} else if (currentLevel === 1) {
-    background(240);            // white
-} else {
-    background(255, 80, 80);    // red
-}
+  // flat‑color backgrounds (changed to grass)
+	drawGrassWallpaper();
 
   // draw hole
-noStroke();
-fill(0);
-ellipse(holeX, holeY, 30, 30);
+	noStroke();
+	fill(0);
+	ellipse(holeX, holeY, 30, 30);
 
   // draw wells
-for (var j = 0; j < wells.length; j++) {
-	wells[j].show();
-}
+	for (var j = 0; j < wells.length; j++) {
+		wells[j].show();
+	}
   // draw wind arrow
-stroke(0);
-push();
-translate(50, 50);
-line(0, 0, windX * 1000, windY * 1000);
-var ax = windX * 1000, ay = windY * 1000;
-fill(0);
-triangle(ax, ay, ax - 5, ay - 5, ax + 5, ay + 5);
-pop();
+	stroke(0);
+	push();
+	translate(50, 50);
+	line(0, 0, windX * 1000, windY * 1000);
+	var ax = windX * 1000, ay = windY * 1000;
+	fill(0);
+	triangle(ax, ay, ax - 5, ay - 5, ax + 5, ay + 5);
+	pop();
 
   // update & draw ball
-ball.update();
-ball.show();
+	ball.update();
+	ball.show();
 
   // aiming line
-if (isAiming) {
-	stroke(0, 150);
-	line(ball.x, ball.y, mouseX, mouseY);
-}
+	if (isAiming) {
+		stroke(0, 150);
+		line(ball.x, ball.y, mouseX, mouseY);
+	}
 
   // UI: shots & best
-noStroke();
-fill(0);
-textSize(16);
-text("shots: " + shots, 10, height - 20);
-var b = bestShots[currentLevel];
-if (b === undefined) b = "—";
-text("best: " + b, 100, height - 20);
+	noStroke();
+	fill(0);
+	textSize(16);
+	text("shots: " + shots, 10, height - 20);
+	var b = bestShots[currentLevel];
+	if (b === undefined) b = "—";
+	text("best: " + b, 100, height - 20);
 
   // check win
-var dxh = ball.x - holeX;
-var dyh = ball.y - holeY;
-if (sqrt(dxh * dxh + dyh * dyh) < 15) {
-	if (bestShots[currentLevel] === undefined || shots < bestShots[currentLevel]) {
-		bestShots[currentLevel] = shots;
-		saveBest();
-	}
-	currentLevel++;
-	if (currentLevel >= levels.length) {
-		noLoop();
-		fill(0);
-		textSize(32);
-		textAlign(CENTER);
-		text("you finished all levels!", width/2, height/2);
-	} else {
-		initLevel(currentLevel);
+	var dxh = ball.x - holeX;
+	var dyh = ball.y - holeY;
+	if (sqrt(dxh * dxh + dyh * dyh) < 15) {
+		if (bestShots[currentLevel] === undefined || shots < bestShots[currentLevel]) {
+			bestShots[currentLevel] = shots;
+			saveBest();
+		}
+		currentLevel++;
+		if (currentLevel >= levels.length) {
+			noLoop();
+			fill(0);
+			textSize(32);
+			textAlign(CENTER);
+			text("you finished all levels!", width/2, height/2);
+		} else {
+			initLevel(currentLevel);
+		}
 	}
 }
 
@@ -129,6 +146,44 @@ function mouseReleased() { // shoot the ball!
 		shots++;
 		isAiming = false;
 	}
+}
+
+// ---- grass ----- (borrowed my own code from the wallpaper sketch)
+function drawGrassWallpaper() {
+	let tile = 50;
+  // grass angle = wind direction + 90°
+	let grassAngle = atan2(windY, windX) + PI/2;
+
+	for (let y = 0; y < height; y += tile) {
+		for (let x = 0; x < width;  x += tile) {
+			drawTileGrass(x, y, tile, grassAngle);
+		}
+	}
+}
+
+function drawTileGrass(x, y, size, angle) {
+	push();
+    // move origin to center of this tile
+	translate(x + size/2, y + size/2);
+    // lean into wind
+	rotate(angle);
+
+    // alternate light/dark green
+	let checker = ((x/size) + (y/size)) % 2;
+	if (checker < 1) {
+      fill(144, 238, 144, 150);  // light green, semi‑transparent
+  } else {
+      fill(34, 139, 34, 150);    // dark green, semi‑transparent
+  }
+  noStroke();
+
+    // draw a triangle blade with base at bottom
+  triangle(
+      -size/2,  size/2,   // bottom left
+       size/2,  size/2,   // bottom right
+           0,   -size/2   // top center
+           );
+  pop();
 }
 
 // ----- ball class -----
