@@ -8,14 +8,14 @@ let ball;
 let holePos;
 let wind;            // p5.Vector
 let wells = [];      // array of Well
-let shots, bestShots = {};
+let shots, bestShots = {}; // see loadBest
 
 // aiming
 let isAiming = false;
 
 function setup() {
 	createCanvas(800, 600);
-	loadBest();
+	loadBest(); // forgot to mention!! this is where i plan to implement a function that i will declare later that will save the users best score on each hole
 	initLevel(0);
 }
 
@@ -45,7 +45,7 @@ function initLevel(idx) {
 }
 
 function draw() {
-  // flat‑color backgrounds
+  // flat‑color backgrounds (might change)
 	if (currentLevel === 0) {
     background(150, 200, 255);  // blue
 } else if (currentLevel === 1) {
@@ -111,3 +111,52 @@ if (sqrt(dxh * dxh + dyh * dyh) < 15) {
 		initLevel(currentLevel);
 	}
 }
+
+function mousePressed() {
+  var dx = mouseX - ball.x; //checks for mouse input
+  var dy = mouseY - ball.y;
+  if (sqrt(dx*dx + dy*dy) < ball.r) {
+    isAiming = true;
+  }
+}
+
+function mouseReleased() { // shoot the ball!
+  if (isAiming) {
+    var vx = (ball.x - mouseX) * 0.1;
+    var vy = (ball.y - mouseY) * 0.1;
+    ball.velX += vx;
+    ball.velY += vy;
+    shots++;
+    isAiming = false;
+  }
+}
+
+// ----- ball class -----
+class Ball {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.velX = 0;
+    this.velY = 0;
+    this.r    = 12;
+  }
+  update() {
+    // wind
+    this.velX += windX;
+    this.velY += windY;
+    // wells
+    for (var i = 0; i < wells.length; i++) {
+      var w = wells[i]; // applies whatever comes next for each well
+      var dx = w.x - this.x; // distance from ball to well
+      var dy = w.y - this.y;
+      var distSq = dx*dx + dy*dy;
+      if (distSq < 1) distSq = 1; // no div by 0 on my watch
+      var force = w.strength / distSq;
+      var d = sqrt(dx*dx + dy*dy);
+      if (d > 0) {
+        dx /= d; dy /= d;
+      }
+      this.velX += dx * force;
+      this.velY += dy * force;
+    }
+    // movement and such blah blah
