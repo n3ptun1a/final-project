@@ -43,3 +43,23 @@ function initLevel(idx) {
 
   shots = 0;
 }
+
+function draw() {
+  // flat‑color backgrounds
+  if (currentLevel === 0) {
+    background(150, 200, 255);  // foresty blue
+  } else if (currentLevel === 1) {
+    background(240);            // snowy white
+  } else {
+    background(255, 80, 80);    // hellish red
+  }
+
+  // draw hole
+  noStroke();
+  fill(0);
+  ellipse(holeX, holeY, 30, 30);
+
+  // draw wells
+  for (var j = 0; j < wells.length; j++) {
+    wells[j].show();
+  }
