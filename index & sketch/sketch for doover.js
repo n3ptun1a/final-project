@@ -18,3 +18,28 @@ function setup() {
 	loadBest();
 	initLevel(0);
 }
+
+function initLevel(idx) {
+  currentLevel = idx;
+  var L = levels[idx];
+
+  // create ball
+  ball = new Ball(L.startX, L.startY);
+
+  // hole
+  holeX = L.holeX;
+  holeY = L.holeY;
+
+  // wind
+  windX = L.windX;
+  windY = L.windY;
+
+  // wells
+  wells = [];
+  for (var i = 0; i < L.wells.length; i++) {
+    var w = L.wells[i];
+    wells.push(new Well(w.x, w.y, w.strength));
+  }
+
+  shots = 0;
+}
