@@ -68,6 +68,7 @@ function initLevel(idx) {
 
 function draw() {
   // flat‑color backgrounds (changed to grass)
+	clear();
 	drawGrassWallpaper();
 
   // draw hole
