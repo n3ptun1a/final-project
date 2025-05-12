@@ -7,6 +7,7 @@ let unlockedLevels = [true, false, false];
 
 let currentLevel = null;
 let platforms = [];
+let snowflakes = [];
 let fireCinders = [];
 
 let ball;
